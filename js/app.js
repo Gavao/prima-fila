@@ -82,7 +82,7 @@ function card(t, extra = '') {
   const badge = mine.status === 'watched'
     ? `<span class="badge">${['me', 'partner'].filter(w => r[w] != null).map(w => `${nameOf(w)[0]} ${r[w]}`).join(' · ') || '✓'}</span>`
     : mine.status === 'watching' ? `<span class="badge live">${mine.progress ? `S${mine.progress.s} E${mine.progress.e}` : 'In corso'}</span>`
-    : isWanted(mine) ? `<span class="badge want">${isTogether(mine) ? 'Insieme' : nameOf(mine.want.me ? 'me' : 'partner')}</span>` : '';
+    : isWanted(mine) ? `<span class="badge want">${isTogether(mine) ? 'Insieme' : 'Io'}</span>` : '';
   return `<button class="card" data-open="${t.type}:${t.id}">${posterImg(t)}${badge}
     <span class="card-title">${esc(t.title)}</span><small>${esc(t.year)}${t.type === 'tv' ? ' · serie' : ''}${extra}</small></button>`;
 }
@@ -121,7 +121,7 @@ function tonightPage() {
     ${!profile.me ? `<a class="hint" href="#/altro"><b>Come vi chiamate?</b><span>Scrivi i vostri due nomi in Altro: servono per i voti di ognuno e per le liste.</span></a>` : ''}
     <section class="tonight">
       <h2 class="big">Cosa guardiamo stasera?</h2>
-      <div class="pick-row"><span>Chi</span><div class="chips">${chips('who', [['insieme', 'Insieme'], ['me', nameOf('me')], ['partner', nameOf('partner')]])}</div></div>
+      <div class="pick-row"><span>Chi</span><div class="chips">${chips('who', [['insieme', 'Insieme'], ['me', 'Io']])}</div></div>
       <div class="pick-row"><span>Cosa</span><div class="chips">${chips('type', [['any', 'Tutto'], ['movie', 'Film'], ['tv', 'Serie']])}</div></div>
       <div class="pick-row"><span>Tempo</span><div class="chips">${chips('time', [['any', 'Quanto serve'], ['105', '< 1h45'], ['135', '< 2h15']])}</div></div>
       <div class="pick-row"><span>Voglia di</span><div class="chips">${MOODS.map(([v, label]) => `<button class="chip ${pick.moods.includes(v) ? 'on' : ''}" data-mood="${v}">${label}</button>`).join('')}</div></div>
@@ -223,7 +223,7 @@ function listPage() {
   const count = w => all.filter(t => (w === 'insieme' ? isTogether(t) : w === 'tutti' ? true : t.want[w] && !isTogether(t))).length;
   const chip = (key, cur, v, label) => `<button class="chip ${cur === v ? 'on' : ''}" data-${key}="${v}">${esc(label)}</button>`;
   view.innerHTML = `<header class="top"><h1>Da vedere</h1></header>
-    <div class="chips scroll">${[['insieme', 'Insieme'], ['me', 'Solo ' + nameOf('me')], ['partner', 'Solo ' + nameOf('partner')], ['tutti', 'Tutti']]
+    <div class="chips scroll">${[['insieme', 'Insieme'], ['me', 'Io'], ['tutti', 'Tutti']]
       .map(([v, l]) => chip('list-who', listWho, v, `${l} ${count(v)}`)).join('')}</div>
     <div class="chips scroll">${chip('list-type', listType, 'any', 'Film e serie')}${chip('list-type', listType, 'movie', 'Film')}${chip('list-type', listType, 'tv', 'Serie')}
       <select id="listSort" aria-label="Ordina"><option value="added" ${listSort === 'added' ? 'selected' : ''}>Ultimi aggiunti</option>
@@ -285,7 +285,6 @@ function renderTitle(key, d) {
   const info = [base.year, type === 'tv' ? (d?.seasons?.length ? plural(d.seasons.length, 'stagione', 'stagioni') : 'serie') : d?.runtime ? hours(d.runtime) : '',
     (d?.genreNames ?? (base.genres ?? []).map(g => genreNames[g]).filter(Boolean)).slice(0, 3).join(', ')].filter(Boolean).join(' · ');
   const want = t?.want ?? {};
-  const people = ['me', 'partner'];
   sheet.innerHTML = `<div class="hero" style="${base.backdrop ? `background-image:url('${poster(base.backdrop, 'w780')}')` : ''}">
       <button class="icon close" data-close aria-label="Chiudi">✕</button>
       <div class="hero-poster">${posterImg(base, 'w342')}</div></div>
@@ -298,7 +297,7 @@ function renderTitle(key, d) {
 
     <div class="want">
       <span>Da vedere</span>
-      ${people.map(w => `<button class="chip ${want[w] ? 'on' : ''}" data-want="${w}">${esc(nameOf(w))}</button>`).join('')}
+      <button class="chip ${want.me && !want.partner ? 'on' : ''}" data-want="me">Io</button>
       <button class="chip ${want.me && want.partner ? 'on' : ''}" data-want="insieme">Insieme</button>
     </div>
     <div class="actions">
@@ -378,7 +377,8 @@ function renderRate(t) {
       <button class="icon" data-close aria-label="Chiudi">✕</button></div>
     <label class="field stack"><span>Quando</span><input type="date" id="rateDate" value="${r.date}" max="${today()}"></label>
     <div class="field stack"><span>Chi l'ha visto</span><div class="chips">
-      ${['me', 'partner'].map(w => `<button class="chip ${r.who.includes(w) ? 'on' : ''}" data-who="${w}">${esc(nameOf(w))}</button>`).join('')}</div></div>
+      <button class="chip ${r.who.length === 1 && r.who[0] === 'me' ? 'on' : ''}" data-who="me">Io</button>
+      <button class="chip ${r.who.length === 2 ? 'on' : ''}" data-who="insieme">Insieme</button></div></div>
     ${['me', 'partner'].filter(w => r.who.includes(w)).map(w => `<div class="field stack"><span>Voto di ${esc(nameOf(w))}</span>
       <div class="rate">${Array.from({ length: 10 }, (_, i) => `<button class="${r.ratings[w] === i + 1 ? 'on' : ''} ${r.ratings[w] >= i + 1 ? 'fill' : ''}" data-rate-val="${w}:${i + 1}">${i + 1}</button>`).join('')}</div></div>`).join('')}
     <button class="primary" data-save-rate>Salva</button>`;
@@ -411,7 +411,7 @@ let diaryWho = 'tutti', diaryTab = 'visti';
 function diaryPage() {
   const watched = [...titles.values()].filter(t => t.status === 'watched' && t.views.length);
   const filtered = watched.filter(t => diaryWho === 'tutti' || (diaryWho === 'insieme'
-    ? t.views.some(v => v.who.length === 2) : t.views.some(v => v.who.includes(diaryWho))));
+    ? t.views.some(v => v.who.length === 2) : t.views.some(v => v.who.length === 1 && v.who[0] === diaryWho)));
   const views = filtered.flatMap(t => t.views.map(v => ({ t, v }))).sort((a, b) => b.v.date.localeCompare(a.v.date));
   const byMonth = new Map();
   for (const x of views) {
@@ -424,7 +424,7 @@ function diaryPage() {
   const chip = (key, cur, v, label) => `<button class="chip ${cur === v ? 'on' : ''}" data-${key}="${v}">${esc(label)}</button>`;
   view.innerHTML = `<header class="top"><h1>Diario</h1></header>
     <div class="chips scroll">${chip('diary-tab', diaryTab, 'visti', 'Visti')}${chip('diary-tab', diaryTab, 'corso', `In corso ${ongoing.length}`)}${chip('diary-tab', diaryTab, 'stats', 'Statistiche')}</div>
-    ${diaryTab === 'visti' ? `<div class="chips scroll">${[['tutti', 'Tutti'], ['insieme', 'Insieme'], ['me', nameOf('me')], ['partner', nameOf('partner')]].map(([v, l]) => chip('diary-who', diaryWho, v, l)).join('')}</div>
+    ${diaryTab === 'visti' ? `<div class="chips scroll">${[['tutti', 'Tutti'], ['insieme', 'Insieme'], ['me', 'Io']].map(([v, l]) => chip('diary-who', diaryWho, v, l)).join('')}</div>
       ${[...byMonth].map(([k, list]) => `<h2>${esc(monthName(k))} <small>${list.length}</small></h2>${list.map(({ t, v }) => diaryRow(t, v)).join('')}`).join('')
         || '<p class="empty">Ancora niente: quando finite un film o una serie, toccate "L\'abbiamo visto".</p>'}` : ''}
     ${diaryTab === 'corso' ? `${ongoing.length ? `<div class="ongoing">${ongoing.map(ongoingRow).join('')}</div>` : '<p class="empty">Nessuna serie in corso.</p>'}
@@ -560,7 +560,8 @@ async function doImport(text) {
       const t = titles.get(inc.key) ?? (added++, { ...inc, want: { me: false, partner: false }, views: [], ratings: {}, status: null, progress: null, note: inc.note ?? '' });
       if (titles.has(inc.key)) merged++;
       for (const w of ['me', 'partner']) {
-        if (inc.want?.[w]) t.want[role(w)] = true;
+        // Da vedere: arrivano solo i titoli "insieme" (quelli che l'altro vuole vedere da solo restano suoi).
+        if (inc.want?.me && inc.want?.partner) t.want[role(w)] = true;
         // Il voto che chi manda ha dato a sé stesso vale più di quello segnato qui; gli altri riempiono solo i vuoti.
         if (inc.ratings?.[w] != null && (w === 'me' || t.ratings[role(w)] == null)) t.ratings[role(w)] = inc.ratings[w];
       }
@@ -704,9 +705,9 @@ document.addEventListener('click', async e => {
     const title = await ensureTitle(key);
     const w = want.dataset.want;
     if (w === 'insieme') { const on = !(title.want.me && title.want.partner); title.want.me = on; title.want.partner = on; }
-    else title.want[w] = !title.want[w];
+    else { const on = !(title.want.me && !title.want.partner); title.want.me = on; title.want.partner = false; }   // "Io": solo per me
     if (!isWanted(title) && !title.status && !title.views.length) { titles.delete(key); await db.del('titles', key); toast('Tolto dalla lista'); }
-    else { await saveTitle(title); toast(isTogether(title) ? 'Da vedere insieme' : isWanted(title) ? `Da vedere: ${nameOf(title.want.me ? 'me' : 'partner')}` : 'Tolto dalla lista'); }
+    else { await saveTitle(title); toast(isTogether(title) ? 'Da vedere insieme' : isWanted(title) ? 'Da vedere: io' : 'Tolto dalla lista'); }
     renderTitle(key, await details(...splitKey(key)).catch(() => null));
     route();
     return;
@@ -717,7 +718,7 @@ document.addEventListener('click', async e => {
   if (whoB && rateDraft) {
     readRateDate();
     const w = whoB.dataset.who;
-    rateDraft.who = rateDraft.who.includes(w) ? rateDraft.who.filter(x => x !== w) : [...rateDraft.who, w].sort();
+    rateDraft.who = w === 'insieme' ? ['me', 'partner'] : ['me'];
     return renderRate(await ensureTitle(rateDraft.key));
   }
   const rv = t.closest('[data-rate-val]');
