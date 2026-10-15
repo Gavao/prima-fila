@@ -44,7 +44,7 @@ let allProviders = [];
 let lastBackup = null;
 const briefs = new Map();      // titoli mostrati di recente (per salvarli anche se il dettaglio non arriva)
 
-const nameOf = who => (who === 'me' ? profile.me || 'Io' : profile.partner || 'Lei/Lui');
+const nameOf = who => (who === 'me' ? profile.me || 'Io' : profile.partner || 'Partner');
 const saveTitle = async t => { t.updated = today(); titles.set(t.key, t); await db.put('titles', t); };
 const isWanted = t => t.want?.me || t.want?.partner;
 const isTogether = t => t.want?.me && t.want?.partner;
