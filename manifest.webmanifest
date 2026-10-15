@@ -1,0 +1,16 @@
+{
+  "name": "Prima Fila",
+  "short_name": "Prima Fila",
+  "description": "Diario di film e serie: visti, voti, da vedere e cosa guardare stasera",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#120a0c",
+  "theme_color": "#120a0c",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
